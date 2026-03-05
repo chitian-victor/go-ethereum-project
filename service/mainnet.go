@@ -13,7 +13,7 @@ import (
 func GetETHBalance(ctx context.Context, cli *ethclient.Client, accountHex string) (*big.Int, error) {
 	balanceWei, err := cli.BalanceAt(ctx, common.HexToAddress(accountHex), nil)
 	if err != nil {
-		log.Fatalf("failed to get balance: %v", err)
+		log.Printf("failed to get balance: %v", err)
 		return nil, err
 	}
 	balanceEth := utils.WeiToEther(balanceWei)

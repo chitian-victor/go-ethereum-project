@@ -2,7 +2,7 @@
 
 ## 安装 solidity 原生编译器
 1. 安装方法 for mac
-> [参考]((https://docs.soliditylang.org/en/latest/installing-solidity.html#macos-packages))
+> [参考](https://docs.soliditylang.org/en/latest/installing-solidity.html#macos-packages)
 ```shell
 brew update
 brew upgrade # optional
