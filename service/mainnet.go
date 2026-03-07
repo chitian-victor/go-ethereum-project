@@ -7,8 +7,18 @@ import (
 
 	"github.com/chitian-victor/go-ethereum-project/utils"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+func GetBlockHeader(cli *ethclient.Client) (*types.Header, error) {
+	header, err := cli.HeaderByNumber(context.Background(), nil) // the latest one
+	if err != nil {
+		log.Printf("GetBlockInfo failed, err: %v", err)
+		return nil, err
+	}
+	return header, nil
+}
 
 func GetETHBalance(ctx context.Context, cli *ethclient.Client, accountHex string) (*big.Int, error) {
 	balanceWei, err := cli.BalanceAt(ctx, common.HexToAddress(accountHex), nil)
