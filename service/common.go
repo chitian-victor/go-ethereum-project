@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 	"strings"
 	"time"
 
@@ -14,6 +15,41 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+func GetBlockInfo(cli *ethclient.Client, num *big.Int) (*types.Block, error) {
+	blockInfo, err := cli.BlockByNumber(context.Background(), num) // num=nil, the latest one
+	if err != nil {
+		log.Printf("BlockByNumber failed, err: %v", err)
+		return nil, err
+	}
+	return blockInfo, nil
+}
+
+func GetBlockHeader(cli *ethclient.Client, num *big.Int) (*types.Header, error) {
+	header, err := cli.HeaderByNumber(context.Background(), num) // num=nil, the latest one
+	if err != nil {
+		log.Printf("HeaderByNumber failed, err: %v", err)
+		return nil, err
+	}
+	return header, nil
+}
+
+func GetSender(client *ethclient.Client, header *types.Header, tx *types.Transaction) (*common.Address, error) {
+	// 步骤1：获取交易所在区块的签名者验证器（ChainID + 区块头）
+	chainID, err := client.ChainID(context.Background())
+	if err != nil {
+		log.Printf("get ChainID failed, err: %v", err)
+		return nil, fmt.Errorf("获取ChainID失败: %v", err)
+	}
+	signer := types.LatestSignerForChainID(chainID)
+	// 步骤2：验证并解析签名者（sender）
+	sender, err := types.Sender(signer, tx)
+	if err != nil {
+		log.Printf("get sender failed, err: %v", err)
+		return nil, err
+	}
+	return &sender, nil
+}
 
 func IsContractAddress(client *ethclient.Client, addressHex string) (bool, error) {
 	address := common.HexToAddress(addressHex)

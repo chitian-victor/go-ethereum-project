@@ -16,7 +16,7 @@ func TestConnect(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("GetPumpkinTokenBalance", func(t *testing.T) {
-		ownerBalance, err := GetPumpkinTokenBalance(client.Client, consts.PUMPKIN_TOKEN, consts.OWNER_ADDRESS)
+		ownerBalance, err := GetPumpkinTokenBalance(client.Client, consts.PUMPKIN_TOKEN, consts.USER_ADDRESS)
 		if err != nil {
 			t.Logf("GetPumpkinTokenBalance failed, err: %v", err)
 			return
