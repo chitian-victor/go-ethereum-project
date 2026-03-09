@@ -8,12 +8,27 @@ import (
 	"github.com/chitian-victor/go-ethereum-project/client"
 	"github.com/chitian-victor/go-ethereum-project/consts"
 	"github.com/chitian-victor/go-ethereum-project/utils"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 )
 
 func TestConnect(t *testing.T) {
 	client.Init()
 	ctx := context.Background()
+
+	t.Run("CallContractMethod", func(t *testing.T) {
+		methodName := "transfer"
+		// 注意：这里地址和转账金额不能是字符串和数字类型
+		args := []interface{}{
+			common.HexToAddress(consts.USER_ADDRESS),
+			big.NewInt(1).Mul(big.NewInt(20), big.NewInt(params.Ether)),
+		}
+		err := CallContractMethod(client.Client, consts.OWNER_PRIVATE_KEY, consts.PUMPKIN_TOKEN, methodName, args...)
+		if err != nil {
+			t.Logf("CallContractMethod failed, err: %v", err)
+			return
+		}
+	})
 
 	t.Run("GetPumpkinTokenBalance", func(t *testing.T) {
 		ownerBalance, err := GetPumpkinTokenBalance(client.Client, consts.PUMPKIN_TOKEN, consts.USER_ADDRESS)
