@@ -7,7 +7,6 @@ import (
 
 	"github.com/chitian-victor/go-ethereum-project/client"
 	"github.com/chitian-victor/go-ethereum-project/consts"
-	"github.com/chitian-victor/go-ethereum-project/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 )
@@ -16,6 +15,18 @@ func TestConnect(t *testing.T) {
 	client.Init()
 	ctx := context.Background()
 
+	t.Run("CallContractMethod", func(t *testing.T) {
+		_, pumpkinTokenAddressHex, err := deployPumpkinToken(ctx, client.Client, consts.OWNER_PRIVATE_KEY, consts.OWNER_ADDRESS)
+		if err != nil {
+			t.Logf("CallContractMethod failed, err: %v", err)
+			return
+		}
+		_, err = GetPumpkinTokenBalance(client.Client, pumpkinTokenAddressHex, consts.OWNER_ADDRESS)
+		if err != nil {
+			t.Logf("GetPumpkinTokenBalance failed, err: %v", err)
+			return
+		}
+	})
 	t.Run("CallContractMethod", func(t *testing.T) {
 		methodName := "transfer"
 		// 注意：这里地址和转账金额不能是字符串和数字类型
@@ -31,13 +42,11 @@ func TestConnect(t *testing.T) {
 	})
 
 	t.Run("GetPumpkinTokenBalance", func(t *testing.T) {
-		ownerBalance, err := GetPumpkinTokenBalance(client.Client, consts.PUMPKIN_TOKEN, consts.USER_ADDRESS)
+		_, err := GetPumpkinTokenBalance(client.Client, consts.PUMPKIN_TOKEN, consts.USER_ADDRESS)
 		if err != nil {
 			t.Logf("GetPumpkinTokenBalance failed, err: %v", err)
 			return
 		}
-		balancePK := utils.WeiToEther(ownerBalance)
-		t.Logf("GetPumpkinTokenBalance: %v(wei) === %v(eth)", ownerBalance, balancePK)
 	})
 
 	t.Run("MintPumpkinToken", func(t *testing.T) {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"fmt"
 	"log"
 	"math/big"
@@ -12,11 +13,63 @@ import (
 	"github.com/chitian-victor/go-ethereum-project/utils"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+func deployPumpkinToken(ctx context.Context, cli *ethclient.Client, privateKeyHex, ownerAddressHex string) (*contract.PumpkinToken, string, error) {
+	privateKey, err := crypto.HexToECDSA(strings.TrimPrefix(privateKeyHex, "0x"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	nonce, err := cli.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	gasPrice, err := cli.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	chainID, err := cli.NetworkID(context.Background())
+	if err != nil {
+		log.Fatalf("获取 ChainID 失败: %v", err)
+	}
+
+	auth := bind.NewKeyedTransactor(privateKey, chainID)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0) // in wei
+	// 最好不要随意设置 gaslimit，否则容易导致合约部署不上
+	//auth.GasLimit
+	auth.GasPrice = gasPrice
+
+	ownerAddress := common.HexToAddress(ownerAddressHex)
+	address, tx, instance, err := contract.DeployPumpkinToken(auth, cli, ownerAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//可以用来等待合约部署完成
+	address, err = bind.WaitDeployed(ctx, cli, tx.Hash())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("PumpkinToken Address=", address.Hex())
+	fmt.Printf("transaction:\n hash:%v\ngas:%v \n", tx.Hash().Hex(), tx.Gas())
+	return instance, address.Hex(), nil
+}
 
 func CallContractMethod(cli *ethclient.Client, privateKeyHex, contractAddressHex, methodName string, args ...interface{}) error {
 	// 1. 加载私钥 (推导 From 地址)
@@ -105,6 +158,7 @@ func GetPumpkinTokenBalance(cli *ethclient.Client, contractAddress, userAddress 
 		log.Printf("Failed to get balance of token, err=%v", err)
 		return nil, err
 	}
+	log.Printf("GetPumpkinTokenBalance: %v(wei) === %v(eth)", balance, utils.WeiToEther(balance))
 	return balance, nil
 }
 
