@@ -100,6 +100,8 @@ func SubscribeEvent(ctx context.Context, cli *ethclient.Client, contractAddressH
             // 接收到新的事件日志
             fmt.Printf("\n--- 收到新事件区块高度: %d ---\n", vLog.BlockNumber)
             fmt.Printf("交易 Hash: %s\n", vLog.TxHash.Hex())
+            // 其实就是crypto.Keccak256Hash("transfer(address,uint256)")
+            fmt.Printf("签名哈希: %s\n", vLog.Topics[0].Hex())
 
             // 验证 Topics 长度。对于 ERC-20 Transfer，from 和 to 都是 indexed，所以会在 topics 里
             // Topic[0] 是签名哈希, Topic[1] 是 from, Topic[2] 是 to
