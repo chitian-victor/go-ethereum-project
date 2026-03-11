@@ -9,7 +9,7 @@ brew upgrade # optional
 brew tap ethereum/ethereum
 brew install solidity
 ```
-2. 升成 abi 
+2. 升成 abi 和 bin 文件
 > 如果用的 foundry 框架，可以直接从 out/contract_name.json里面提取出 abi 也可以
 ```shell
 # 需要指定--include-path，代表该合约引用了哪些包，比如openzeppelin，同时要配合 --base-path 使用，代表当前执行路径
