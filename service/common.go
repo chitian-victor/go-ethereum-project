@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -15,6 +17,19 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+func LoadContractABI(filePath string) (abi.ABI, error) {
+	abiData, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("open contractxxxx.json failed, err: %v", err)
+	}
+	abiReader := strings.NewReader(string(abiData))
+	contractABI, err := abi.JSON(abiReader)
+	if err != nil {
+		log.Fatalf("解析 ABI 失败: %v", err)
+	}
+	return contractABI, nil
+}
 
 func GetBlockInfo(cli *ethclient.Client, num *big.Int) (*types.Block, error) {
 	blockInfo, err := cli.BlockByNumber(context.Background(), num) // num=nil, the latest one

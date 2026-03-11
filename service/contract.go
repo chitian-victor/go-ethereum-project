@@ -6,13 +6,11 @@ import (
 	"fmt"
 	"log"
 	"math/big"
-	"os"
 	"strings"
 
 	"github.com/chitian-victor/go-ethereum-project/contract"
 	"github.com/chitian-victor/go-ethereum-project/utils"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/v2"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -84,15 +82,11 @@ func CallContractMethod(cli *ethclient.Client, privateKeyHex, contractAddressHex
 	contractAddress := common.HexToAddress(contractAddressHex)
 
 	// 4. 核心步骤：通过简化的 ABI 字符串解析合约接口
-	// todo-hs 改为绝对路径可以不, json?
-	abiData, err := os.ReadFile("../abi/PumpkinToken.abi")
+	abiFilePath := "../abi/PumpkinToken.abi"
+	contractABI, err := LoadContractABI(abiFilePath)
 	if err != nil {
-		log.Fatalf("open pumpkinToken.json failed, err: %v", err)
-	}
-	abiReader := strings.NewReader(string(abiData))
-	contractABI, err := abi.JSON(abiReader)
-	if err != nil {
-		log.Fatalf("解析 ABI 失败: %v", err)
+		log.Printf("LoadContractABI failed, err: %v", err)
+		return err
 	}
 
 	// 注意：这里的方法名不需要带参数类型，因为我们利用 abi 解析的，这里只是选取方法
